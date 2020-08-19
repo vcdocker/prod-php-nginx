@@ -20,7 +20,7 @@ steps:
     image: plugins/docker
     settings:
       registry: docker-registry.vicoders.com
-      repo: vcdocker/docker-laravel-remote-image
+      repo: docker-registry.vicoders.com/docker-laravel-remote-image
       tags:
         - ${DRONE_COMMIT_BRANCH}
       create_repository: true
