@@ -1,41 +1,36 @@
-FROM php:7.2-fpm-alpine3.8
+FROM php:7.4-fpm-alpine
 
 LABEL Maintainer Hieupv <hieupv@codersvn.com>
 
-# Add Repositories
-RUN rm -f /etc/apk/repositories &&\
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.8/main" >> /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.8/community" >> /etc/apk/repositories
-
-RUN apk add --no-cache bash \
-    && apk add --no-cache --virtual .build-deps  \
-    zlib-dev \
+RUN apk add --no-cache \
+    bash \
+    libzip-dev \
+    oniguruma-dev \
+    sqlite-dev \
+    freetype-dev \
     libjpeg-turbo-dev \
     libpng-dev \
     libxml2-dev \
     bzip2-dev \
-    && apk add --update --no-cache \
-    jpegoptim \
-    pngquant \
-    optipng \
     supervisor \
     nano \
     icu-dev \
-    freetype-dev \
     nginx \
+    zip \
     mysql-client \
-    && docker-php-ext-configure \
-    opcache --enable-opcache &&\
-    docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ &&\
-    docker-php-ext-install \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    # && docker-php-ext-configure gd --with-freetype-dir=/usr --with-jpeg-dir=/usr --with-png-dir=/usr \
+    && docker-php-ext-configure opcache --enable-opcache \
+    && docker-php-ext-install \
     opcache \
+    gd \
     mysqli \
     pdo \
     pdo_mysql \
+    pdo_sqlite \
     sockets \
     json \
     intl \
-    gd \
     xml \
     zip \
     bz2 \
@@ -43,6 +38,7 @@ RUN apk add --no-cache bash \
     bcmath \
     mbstring \
     exif
+
 # Add Composer
 RUN curl -s https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
