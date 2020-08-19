@@ -53,3 +53,4 @@ trigger:
   branch:
     - php74
     - php73
+    - php72
