@@ -5,30 +5,30 @@ name: default
 globals:
   - &docker_creds
     username:
-      from_secret: DOCKER_USER
+      from_secret: docker_user
     password:
-      from_secret: DOCKER_PASS
+      from_secret: docker_password
 steps:
-  # - name: prepare
-  #   image: busybox
-  #   commands:
-  #     - mkdir -p /cache/${DRONE_REPO}/docker
-  #   volumes:
-  #     - name: cache
-  #       path: /cache
+  - name: prepare
+    image: busybox
+    commands:
+      - mkdir -p /cache/${DRONE_REPO}/docker
+    volumes:
+      - name: cache
+        path: /cache
   - name: build
     image: plugins/docker
     settings:
       registry: docker-registry.vicoders.com
-      repo: vcdocker/docker-laravel-remote-image
+      repo: docker-registry.vicoders.com/prod-php-nginx
       tags:
         - ${DRONE_COMMIT_BRANCH}
       create_repository: true
       use_cache: true
       <<: *docker_creds
-    # volumes:
-    #   - name: docker
-    #     path: /var/lib/docker
+    volumes:
+      - name: docker
+        path: /var/lib/docker
   # - name: deploy
   #   image: appleboy/drone-ssh
   #   settings:
@@ -41,13 +41,13 @@ steps:
   #       - docker pull docker-registry.vicoders.com/webpress_vn:${DRONE_COMMIT_BRANCH}
   #       - docker service update --image docker-registry.vicoders.com/webpress_vn:${DRONE_COMMIT_BRANCH} --force $SERVICE_NAME
   #       - docker system prune -f
-# volumes:
-#   - name: cache
-#     host:
-#       path: /var/cache
-#   - name: docker
-#     host:
-#       path: /var/cache/${DRONE_REPO}/docker
+volumes:
+  - name: cache
+    host:
+      path: /var/cache
+  - name: docker
+    host:
+      path: /var/cache/${DRONE_REPO}/docker
 
 trigger:
   branch:
