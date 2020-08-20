@@ -1,10 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# usage: file_env VAR [DEFAULT]
-#    ie: file_env 'XYZ_MYSQL_PASSWORD' 'example'
-# (will allow for "$XYZ_MYSQL_PASSWORD_FILE" to fill in the value of
-#  "$XYZ_MYSQL_PASSWORD" from a file, especially for Docker's secrets feature)
+WAIT_FOR_DB="${WAIT_FOR_DB:-false}"
 
 if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ] || [ "$1" == supervisord ]; then
 	if [ "$(id -u)" = '0' ]; then
@@ -29,28 +26,30 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ] || [ "$1" == supervisord ]; the
 	fi
 
 	# Wait for database service is ready
-	# {
-	# 	i=0
-	# 	while [ $i -lt 10 ]; do
-	# 		{
-	# 			wp db check --allow-root
-	# 			if [ $? -eq 0 ]; then
-	# 				echo "Database connected"
-	# 				break
-	# 			else
-	# 				echo "Wrong database credentials or database is not ready"
-	# 				echo "retry in 5s ..."
-	# 			fi
-	# 		} || {
-	# 			echo SKIP
-	# 		}
-	# 		((i++))
-	# 		sleep 5
-	# 	done
+	if $WAIT_FOR_DB; then
+		{
+			i=0
+			while [ $i -lt 20 ]; do
+				{
+					mysqladmin ping -h"$WAIT_FOR_DB" --silent
+					if [ $? -eq 0 ]; then
+						echo "Database connected"
+						break
+					else
+						echo "Database is not ready"
+						echo "retry in 5s ..."
+					fi
+				} || {
+					echo SKIP
+				}
+				((i++))
+				sleep 5
+			done
 
-	# } || {
-	# 	echo SKIP
-	# }
+		} || {
+			echo SKIP
+		}
+	fi
 fi
 
 exec "$@"
